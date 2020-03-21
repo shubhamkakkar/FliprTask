@@ -1,9 +1,12 @@
 package me.sankalpchauhan.kanbanboard.model;
 
+import androidx.annotation.Keep;
+
 import com.google.firebase.firestore.Exclude;
 
 import java.io.Serializable;
 
+@Keep
 public class User implements Serializable {
     public String uid;
     public String name;

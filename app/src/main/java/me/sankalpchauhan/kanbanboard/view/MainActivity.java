@@ -3,6 +3,7 @@ package me.sankalpchauhan.kanbanboard.view;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.mikepenz.materialdrawer.AccountHeader;
@@ -37,7 +39,10 @@ import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 
 import me.sankalpchauhan.kanbanboard.R;
+import me.sankalpchauhan.kanbanboard.fragments.BoardCreateBottomSheet;
 import me.sankalpchauhan.kanbanboard.model.User;
+import me.sankalpchauhan.kanbanboard.util.Constants;
+import me.sankalpchauhan.kanbanboard.viewmodel.MainActivityViewModel;
 
 import static me.sankalpchauhan.kanbanboard.util.Constants.USER;
 
@@ -47,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     Toolbar toolbar;
     String appVersionName;
     int appVersionCode;
+    FloatingActionButton boardFAB;
+    MainActivityViewModel mainActivityViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Boards");
         setSupportActionBar(toolbar);
+        initMainActivityViewModel();
         try {
             PackageInfo pInfo = this.getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_ACTIVITIES);
             appVersionName = pInfo.versionName;
@@ -62,15 +70,20 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                 // avoid huge version numbers for this to work
                 appVersionCode = (int) pInfo.getLongVersionCode();
             } else {
-                //noinspection deprecation
                 appVersionCode = pInfo.versionCode;
             }
 
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+        boardFAB = findViewById(R.id.board_add_FAB);
         initDrawer();
         initGoogleSignInClient();
+
+        boardFAB.setOnClickListener(view -> {
+            BoardCreateBottomSheet boardCreateBottomSheet = new BoardCreateBottomSheet();
+            boardCreateBottomSheet.show(getSupportFragmentManager(), "boardcreatebottomsheet");
+        });
     }
 
     private void initDrawer(){
@@ -159,6 +172,9 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions);
     }
+    private void initMainActivityViewModel() {
+        mainActivityViewModel = new ViewModelProvider(this).get(MainActivityViewModel.class);
+    }
 
 
     @Override
@@ -208,5 +224,12 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     @Override
     public void onBackPressed() {
        super.onBackPressed();
+    }
+
+    public void addBoardToDB(String boardTitle, String boardType){
+        mainActivityViewModel.createBoard(this, firebaseAuth.getCurrentUser().getUid(), boardTitle, boardType);
+        mainActivityViewModel.boardLiveData.observe(this, newBoard->{
+            Log.d(Constants.TAG, "Board Add Success");
+        });
     }
 }

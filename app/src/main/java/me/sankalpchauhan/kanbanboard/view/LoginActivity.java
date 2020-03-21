@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -69,11 +70,26 @@ public class LoginActivity extends AppCompatActivity {
             mProgressGSignIn.setVisibility(View.GONE);
 
         }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            signup.setText(Html.fromHtml("<p>Not a user yet? <span style=\"color: #0000ff;\"><strong>Sign Up</strong></span></p>",Html.FROM_HTML_MODE_LEGACY));
+        } else {
+            signup.setText(Html.fromHtml("<p>Not a user yet? <span style=\"color: #0000ff;\"><strong>Sign Up</strong></span></p>"));
+        }
+
         initGoogleSignInButton();
         initAuthViewModel();
         initGoogleSignInClient();
         initEmailSignInButton();
         initPasswordReset();
+
+        signup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(LoginActivity.this, SignUpActivity.class);
+                startActivity(i);
+                overridePendingTransition(0,0);
+            }
+        });
     }
 
     private void initEmailSignInButton(){
