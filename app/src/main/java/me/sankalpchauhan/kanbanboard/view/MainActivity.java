@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Dialog;
 import android.content.Intent;
@@ -19,12 +21,14 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.mikepenz.materialdrawer.AccountHeader;
 import com.mikepenz.materialdrawer.AccountHeaderBuilder;
 import com.mikepenz.materialdrawer.Drawer;
@@ -39,7 +43,9 @@ import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 
 import me.sankalpchauhan.kanbanboard.R;
+import me.sankalpchauhan.kanbanboard.adapters.PersonalBoardAdapter;
 import me.sankalpchauhan.kanbanboard.fragments.BoardCreateBottomSheet;
+import me.sankalpchauhan.kanbanboard.model.Board;
 import me.sankalpchauhan.kanbanboard.model.User;
 import me.sankalpchauhan.kanbanboard.util.Constants;
 import me.sankalpchauhan.kanbanboard.viewmodel.MainActivityViewModel;
@@ -54,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     int appVersionCode;
     FloatingActionButton boardFAB;
     MainActivityViewModel mainActivityViewModel;
+    private PersonalBoardAdapter adapter;
+    RecyclerView rvPersonal, rvTeam;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
             e.printStackTrace();
         }
         boardFAB = findViewById(R.id.board_add_FAB);
+        rvPersonal = findViewById(R.id.rv_personal_board);
+        rvTeam = findViewById(R.id.rv_team_board);
         initDrawer();
         initGoogleSignInClient();
 
@@ -84,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
             BoardCreateBottomSheet boardCreateBottomSheet = new BoardCreateBottomSheet();
             boardCreateBottomSheet.show(getSupportFragmentManager(), "boardcreatebottomsheet");
         });
+        setUpPersonalRecyclerView(rvPersonal);
     }
 
     private void initDrawer(){
@@ -208,12 +219,14 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     protected void onStart() {
         super.onStart();
         firebaseAuth.addAuthStateListener(this);
+        adapter.startListening();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         firebaseAuth.removeAuthStateListener(this);
+        adapter.startListening();
     }
 
     public static FirebaseUser isAuthenticated(){
@@ -230,6 +243,32 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         mainActivityViewModel.createBoard(this, firebaseAuth.getCurrentUser().getUid(), boardTitle, boardType);
         mainActivityViewModel.boardLiveData.observe(this, newBoard->{
             Log.d(Constants.TAG, "Board Add Success");
+        });
+    }
+
+    public void setUpPersonalRecyclerView(RecyclerView recyclerView){
+        FirestoreRecyclerOptions<Board> options = new FirestoreRecyclerOptions.Builder<Board>()
+                .setQuery(mainActivityViewModel.getQuery(firebaseAuth.getCurrentUser().getUid()), Board.class)
+                .build();
+
+        adapter = new PersonalBoardAdapter(options);
+        recyclerView.setHasFixedSize(false);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        recyclerView.setAdapter(adapter);
+
+        adapter.setOnItemClickListner(new PersonalBoardAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
+                Intent boardDetailPage = new Intent(MainActivity.this, BoardActivity.class);
+                Bundle b = new Bundle();
+                String id = documentSnapshot.getId();
+                Board board = documentSnapshot.toObject(Board.class);
+                Log.e(Constants.TAG, id+" "+ board.getTitle());
+                b.putString("BoardId", id);
+                b.putSerializable("Board", board);
+                boardDetailPage.putExtras(b);
+                startActivity(boardDetailPage);
+            }
         });
     }
 }

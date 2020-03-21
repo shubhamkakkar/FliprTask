@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import com.google.firebase.firestore.Query;
+
 import me.sankalpchauhan.kanbanboard.model.Board;
 import me.sankalpchauhan.kanbanboard.repository.LoginRepository;
 import me.sankalpchauhan.kanbanboard.repository.MainActivityRepository;
@@ -25,5 +27,9 @@ public class MainActivityViewModel extends AndroidViewModel {
     public void createBoard(Context context, String UserUID, String boardTitle, String boardType){
         Log.e(Constants.TAG, UserUID+" "+boardType+" "+boardTitle);
         boardLiveData = mainActivityRepository.createPersonalBoard(context, UserUID, boardTitle, boardType);
+    }
+
+    public Query getQuery(String UserId){
+        return mainActivityRepository.getPersonalBoard(UserId);
     }
 }
