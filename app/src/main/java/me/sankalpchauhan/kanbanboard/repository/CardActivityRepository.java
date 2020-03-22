@@ -41,7 +41,8 @@ public class CardActivityRepository {
         MutableLiveData<String> newUrlMutableLiveData = new MutableLiveData<>();
         final StorageReference ref = mStorageReference.child("attachments/" + listId);
         Task uploadTask = ref.putFile(Uri.fromFile(destination));
-        showProgressDialog(context, "Uploading Attachment...");
+//        showProgressDialog(context, "Uploading Attachment...");
+        Toast.makeText(context, "Uploading Attachment...", Toast.LENGTH_LONG).show();
         Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
             @Override
             public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
@@ -58,7 +59,7 @@ public class CardActivityRepository {
                 if (task.isSuccessful()) {
                     Uri downloadUri = task.getResult();
                     String downloadURL = downloadUri.toString();
-                    hideProgressDialog();
+                  //  hideProgressDialog();
                     newUrlMutableLiveData.setValue(downloadURL);
                     Toast.makeText(context, "Attachment Uploaded", Toast.LENGTH_LONG).show();
                 } else {

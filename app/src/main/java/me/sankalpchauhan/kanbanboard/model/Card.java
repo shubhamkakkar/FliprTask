@@ -34,7 +34,7 @@ public class Card implements Serializable, PositionAwareDocument {
 
     @Override
     public Double getPosition() {
-        return null;
+        return position;
     }
 
     @Override

@@ -16,8 +16,8 @@ import me.sankalpchauhan.kanbanboard.repository.CardActivityRepository;
 
 public class CardActivityViewModel extends AndroidViewModel {
     CardActivityRepository cardActivityRepository;
-    LiveData<String> urlLiveData;
-    LiveData<Card> cardLiveData;
+    public LiveData<String> urlLiveData;
+    public LiveData<Card> cardLiveData;
 
     public CardActivityViewModel(@NonNull Application application) {
         super(application);
