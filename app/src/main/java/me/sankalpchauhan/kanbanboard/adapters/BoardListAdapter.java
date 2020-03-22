@@ -2,6 +2,8 @@ package me.sankalpchauhan.kanbanboard.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,8 +25,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import me.sankalpchauhan.kanbanboard.R;
 import me.sankalpchauhan.kanbanboard.model.BoardList;
 import me.sankalpchauhan.kanbanboard.model.Card;
+import me.sankalpchauhan.kanbanboard.util.Constants;
 import me.sankalpchauhan.kanbanboard.util.FirestoreReorderableItemTouchHelperCallback;
 import me.sankalpchauhan.kanbanboard.util.IgnoreChangesFirestoreRecyclerAdapter;
+import me.sankalpchauhan.kanbanboard.view.BoardActivity;
+import me.sankalpchauhan.kanbanboard.view.CardActivity;
 
 import static me.sankalpchauhan.kanbanboard.util.Constants.BOARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.CARD_LIST;
@@ -37,15 +42,61 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
     private FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
     private CollectionReference database = rootRef.collection(USERS);
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+    private RecyclerView.RecycledViewPool recycledViewPool;
+    CardAdapter cardAdapter;
+    private Context mContext;
+    ItemTouchHelper cardTouchHelper;
 
-    public BoardListAdapter(@NonNull FirestoreRecyclerOptions<BoardList> options) {
+    public BoardListAdapter(@NonNull FirestoreRecyclerOptions<BoardList> options, Context context) {
         super(options);
+        this.recycledViewPool= new RecyclerView.RecycledViewPool();
+        this.mContext = context;
     }
 
     @Override
     protected void onBindViewHolder(@NonNull BoardListAdapter.ListViewHolder listViewHolder, int position, @NonNull BoardList boardList) {
         listViewHolder.toolbar.setTitle(boardList.getTitle());
+        if (mContext instanceof BoardActivity) {
+            String boardid = ((BoardActivity) mContext).getBoardId();
 
+            final CollectionReference boardListCollection = database.document(firebaseAuth.getCurrentUser().getUid()).collection(PERSONAL_BOARDS).document(boardid).collection(BOARD_LIST).document(getSnapshots().getSnapshot(position).getId()).collection(CARD_LIST);
+            //Log.e(Constants.TAG, id);
+            FirestoreRecyclerOptions<Card> cardOptions = new FirestoreRecyclerOptions.Builder<Card>()
+                    .setQuery(boardListCollection.orderBy("position"), Card.class)
+                    .build();
+            cardAdapter = new CardAdapter(cardOptions);
+            listViewHolder.cardRv.setHasFixedSize(false);
+            listViewHolder.cardRv.setLayoutManager(new LinearLayoutManager(mContext.getApplicationContext()));
+            listViewHolder.cardRv.setRecycledViewPool(recycledViewPool);
+            listViewHolder.cardRv.setAdapter(cardAdapter = new CardAdapter(cardOptions) {
+                @Override
+                public void onDataChanged() {
+                    super.onDataChanged();
+                    //setupEmptyView(mExperienceList, mExperienceEmpty, getItemCount());
+                }
+            });
+            cardAdapter.startListening();
+            BoardActivity boardActivity = (BoardActivity) mContext;
+            cardTouchHelper = new ItemTouchHelper(new FirestoreReorderableItemTouchHelperCallback<>(boardActivity, cardAdapter, boardListCollection));
+        cardTouchHelper.attachToRecyclerView(listViewHolder.cardRv);
+
+        cardAdapter.setOnItemClickListner(new CardAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(DocumentSnapshot documentSnapshot, int position2) {
+                Intent i = new Intent(mContext, CardActivity.class);
+                String listid = documentSnapshot.getId();
+                Card c = documentSnapshot.toObject(Card.class);
+                Bundle b = new Bundle();
+                b.putString("cardId", listid);
+                b.putString("boardId", boardid);
+                b.putSerializable("BoardList", boardList);
+                b.putSerializable("listId", getSnapshots().getSnapshot(position).getId());
+                b.putSerializable("card", c);
+                i.putExtras(b);
+                mContext.startActivity(i);
+            }
+        });
+        }
     }
 
     @NonNull
@@ -63,6 +114,7 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
             super(itemView);
             mCreateCardBTN = itemView.findViewById(R.id.create_card_BTN);
             toolbar = itemView.findViewById(R.id.toolbar);
+            cardRv = itemView.findViewById(R.id.card_view_rv);
             mCreateCardBTN.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -83,24 +135,4 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
         this.listener = listner;
     }
 
-//    public void setUpRecyclerView(RecyclerView recyclerView, CardAdapter cardAdapter, ItemTouchHelper cardTouchHelper, Context context){
-//        final CollectionReference boardListCollection = database.document(firebaseAuth.getCurrentUser().getUid()).collection(PERSONAL_BOARDS).document(boardid).collection(BOARD_LIST).document(listid).collection(CARD_LIST);
-//        //Log.e(Constants.TAG, id);
-//        FirestoreRecyclerOptions<Card> cardOptions = new FirestoreRecyclerOptions.Builder<Card>()
-//                .setQuery(boardListCollection.orderBy("position"), Card.class)
-//                .build();
-//        cardAdapter = new CardAdapter(cardOptions);
-//        recyclerView.setHasFixedSize(false);
-////        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-//        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-//        recyclerView.setAdapter(cardAdapter = new CardAdapter(cardOptions){
-//            @Override
-//            public void onDataChanged() {
-//                super.onDataChanged();
-//                //setupEmptyView(mExperienceList, mExperienceEmpty, getItemCount());
-//            }
-//        });
-////        cardTouchHelper = new ItemTouchHelper(new FirestoreReorderableItemTouchHelperCallback<>(context, cardAdapter, boardListCollection));
-////        cardTouchHelper.attachToRecyclerView(recyclerView);
-//    }
 }

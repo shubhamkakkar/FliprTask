@@ -36,5 +36,9 @@ public class CardActivityViewModel extends AndroidViewModel {
         cardActivityRepository.updateCard(context, updatedMap, boardId, listId, cardId);
     }
 
+    public void archiveCard(Context context, String boardId, String listId, String cardId, Card card){
+        cardActivityRepository.archiveCard(context, boardId, listId, cardId, card);
+    }
+
 
 }

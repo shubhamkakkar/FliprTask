@@ -9,4 +9,5 @@ public interface Constants {
     String PERSONAL_BOARDS = "personalBoards";
     String BOARD_LIST = "boardList";
     String CARD_LIST = "cardList";
+    String ARCHIVE_CARD_LIST = "archiveCardList";
 }

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".view.CardActivity">
-    <com.google.android.material.appbar.AppBarLayout
+ <com.google.android.material.appbar.AppBarLayout
         android:layout_height="192dp"
         android:layout_width="match_parent">
         <com.google.android.material.appbar.CollapsingToolbarLayout
@@ -23,6 +23,12 @@
                 android:adjustViewBounds="true"
                 app:layout_collapseMode="parallax"
                 app:layout_collapseParallaxMultiplier="0.7"
+                android:foreground="@drawable/image_overlay_light"
+                />
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
                 />
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/activity_event_toolbar"
@@ -83,8 +89,27 @@
             android:drawablePadding="10dip"
             android:textSize="18sp"
             android:layout_margin="20dp"
-            android:drawableStart="@drawable/ic_attach_file_grey_24dp"/>
+            android:drawableStart="@drawable/ic_attach_file_grey_24dp"
+            android:autoLink="web"/>
 
+            <Button
+                android:id="@+id/update_BTN"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Update"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:visibility="gone"
+                />
+            <Button
+                android:id="@+id/archive_BTN"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="10dp"
+                android:text="ARCHIVE"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:visibility="gone"/>
             <Button
                 android:id="@+id/create_BTN"
                 android:layout_width="wrap_content"
@@ -100,15 +125,6 @@
                 android:layout_gravity="end"
                 android:layout_marginTop="30dp"
                 android:visibility="gone"/>
-            <Button
-                android:id="@+id/update_BTN"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:layout_marginTop="30dp"
-                android:text="Update"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:visibility="invisible"/>
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

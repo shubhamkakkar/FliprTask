@@ -12,7 +12,7 @@ public class FirestoreReorderableItemTouchHelperCallback<T extends PositionAware
     private final Activity mContext;
     private final IgnoreChangesFirestoreRecyclerAdapter<T, ?> mRecyclerAdapter;
     private final CollectionReference mCollectionReference;
-
+    private String type;
     private int dragFrom = -1;
     private int dragTo = -1;
 
@@ -25,6 +25,17 @@ public class FirestoreReorderableItemTouchHelperCallback<T extends PositionAware
         mRecyclerAdapter = recyclerAdapter;
         mCollectionReference = collectionReference;
     }
+
+//    public FirestoreReorderableItemTouchHelperCallback(
+//            Activity context,
+//            IgnoreChangesFirestoreRecyclerAdapter<T, ?> recyclerAdapter,
+//            CollectionReference collectionReference, String type) {
+//        super( ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.START | ItemTouchHelper.END);
+//        mContext = context;
+//        mRecyclerAdapter = recyclerAdapter;
+//        mCollectionReference = collectionReference;
+//        this.type = type;
+//    }
 
     @Override
     public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder source, @NonNull RecyclerView.ViewHolder target) {
@@ -62,16 +73,17 @@ public class FirestoreReorderableItemTouchHelperCallback<T extends PositionAware
         dragFrom = dragTo = -1;
     }
 
-    @Override
-    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-
-    }
 
 
 
     @Override
     public boolean isLongPressDragEnabled() {
         return true;
+    }
+
+    @Override
+    public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
     }
 
 }

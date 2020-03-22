@@ -2,6 +2,7 @@ package me.sankalpchauhan.kanbanboard.repository;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 import me.sankalpchauhan.kanbanboard.model.Card;
 
+import static me.sankalpchauhan.kanbanboard.util.Constants.ARCHIVE_CARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.BOARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.CARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.PERSONAL_BOARDS;
@@ -99,6 +101,22 @@ public class CardActivityRepository {
             }
         });
         //return newBoardMutableLiveData;
+    }
+
+    public void archiveCard(Context context, String boardId, String listId, String cardId, Card card){
+        Log.e("TESTING", boardId+" "+listId+" "+cardId+" "+card);
+        CollectionReference archiveCardRef = database.document(firebaseAuth.getCurrentUser().getUid()).collection(PERSONAL_BOARDS).document(boardId).collection(BOARD_LIST).document(listId).collection(ARCHIVE_CARD_LIST);
+        DocumentReference oldCardRef = database.document(firebaseAuth.getCurrentUser().getUid()).collection(PERSONAL_BOARDS).document(boardId).collection(BOARD_LIST).document(listId).collection(CARD_LIST).document(cardId);
+        archiveCardRef.add(card).addOnCompleteListener(task -> {
+           if(task.isSuccessful()){
+               oldCardRef.delete().addOnCompleteListener(task1 -> {
+                   Toast.makeText(context, "Card Archived", Toast.LENGTH_LONG).show();
+               });
+           }
+           else {
+               Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+           }
+        });
     }
 
 

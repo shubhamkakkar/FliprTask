@@ -1,6 +1,7 @@
 package me.sankalpchauhan.kanbanboard.view;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -25,6 +26,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.ByteArrayOutputStream;
@@ -35,13 +37,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import me.sankalpchauhan.kanbanboard.BuildConfig;
 import me.sankalpchauhan.kanbanboard.R;
 import me.sankalpchauhan.kanbanboard.fragments.DateTimePickerDialog;
 import me.sankalpchauhan.kanbanboard.model.Board;
 import me.sankalpchauhan.kanbanboard.model.BoardList;
+import me.sankalpchauhan.kanbanboard.model.Card;
 import me.sankalpchauhan.kanbanboard.util.Constants;
 import me.sankalpchauhan.kanbanboard.viewmodel.CardActivityViewModel;
 
@@ -59,10 +64,14 @@ public class CardActivity extends AppCompatActivity {
     CardActivityViewModel cardActivityViewModel;
     String atachmentUrl=null;
     TextView attachmentTV, dueDateTv;
-    Button createButton;
+    Button createButton, updateButton, archiveButton;
     ProgressBar progressBar;
     Date selecteDate=null;
     EditText cardTitle;
+    Toolbar toolbar;
+    Card gotCard;
+    String cardId;
+    Map<String, Object> updatedMap = new HashMap<>();
 
 
     @Override
@@ -77,6 +86,26 @@ public class CardActivity extends AppCompatActivity {
         createButton = findViewById(R.id.create_BTN);
         progressBar = findViewById(R.id.uploadProgress);
         cardTitle = findViewById(R.id.card_title);
+        updateButton = findViewById(R.id.update_BTN);
+        archiveButton = findViewById(R.id.archive_BTN);
+        toolbar = findViewById(R.id.activity_event_toolbar);
+        toolbar.setTitle(boardList.getTitle()+" List Card");
+        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
+
+        if(gotCard!=null){
+            cardTitle.setText(gotCard.getTitle());
+            createButton.setVisibility(View.GONE);
+            updateButton.setVisibility(View.VISIBLE);
+            archiveButton.setVisibility(View.VISIBLE);
+            Glide.with(this).load(gotCard.getAttachment()).into(titleIV);
+            if(gotCard.getAttachment()!=null){
+                attachmentTV.setText("Upload New File\n \nAttached File\n "+gotCard.getAttachment());
+                attachmentTV.setTextColor(getResources().getColor(R.color.green1));
+            }
+            if(gotCard.getDueDate()!=null){
+                dueDateTv.setText(getRedableDate(gotCard.getDueDate()));
+            }
+        }
 
         attachmentTV.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,9 +126,33 @@ public class CardActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(!TextUtils.isEmpty(cardTitle.getText())) {
-                    cardActivityViewModel.createCard(CardActivity.this, boardid, cardTitle.getText().toString(), listid, atachmentUrl, selecteDate);
+                    if(gotCard==null) {
+                        cardActivityViewModel.createCard(CardActivity.this, boardid, cardTitle.getText().toString(), listid, atachmentUrl, selecteDate);
+                    } else {
+                        Log.e(Constants.TAG, "YEAH");
+                    }
                 } else {
                     Toast.makeText(CardActivity.this, "A card must have a title", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        archiveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                cardActivityViewModel.archiveCard(CardActivity.this,boardid, listid, cardId, gotCard);
+            }
+        });
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(!(TextUtils.isEmpty(cardTitle.getText()) && cardTitle.getText().toString().equals(gotCard.getTitle()))){
+                    updatedMap.put("title", cardTitle.getText().toString());
+                }
+                if(updatedMap!=null) {
+                    cardActivityViewModel.updateCard(CardActivity.this, updatedMap, boardid, listid, cardId);
+                } else {
+                    Toast.makeText(CardActivity.this, "Nothing to update", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -108,9 +161,13 @@ public class CardActivity extends AppCompatActivity {
     public void getIntentData(){
         Intent intent = this.getIntent();
         Bundle bundle = intent.getExtras();
-        boardid = bundle.getString("BoardId");
-        listid = bundle.getString("ListId");
+        boardid = bundle.getString("boardId");
+        listid = bundle.getString("listId");
         boardList = (BoardList) bundle.getSerializable("BoardList");
+        if(bundle.getSerializable("card")!=null){
+            gotCard = (Card) bundle.getSerializable("card");
+            cardId = bundle.getString("cardId");
+        }
     }
 
     private void initBoardActivityViewModel() {
@@ -150,11 +207,21 @@ public class CardActivity extends AppCompatActivity {
                     cardActivityViewModel.getImageUrl(this, destination, listid);
                     progressBar.setVisibility(View.VISIBLE);
                     createButton.setVisibility(View.INVISIBLE);
+                    updateButton.setVisibility(View.GONE);
+                    archiveButton.setVisibility(View.GONE);
                     cardActivityViewModel.urlLiveData.observe(this, newUrl->{
                         atachmentUrl = newUrl;
+                        updatedMap.put("attachment", newUrl);
                         Log.e(Constants.TAG, atachmentUrl);
+                        attachmentTV.setText("Attachment Added");
+                        attachmentTV.setTextColor(getResources().getColor(R.color.green1));
                         progressBar.setVisibility(View.GONE);
-                        createButton.setVisibility(View.VISIBLE);
+                        if(gotCard==null) {
+                            createButton.setVisibility(View.VISIBLE);
+                        } else {
+                            updateButton.setVisibility(View.VISIBLE);
+                            archiveButton.setVisibility(View.VISIBLE);
+                        }
                     });
                 }
                 else{
@@ -181,11 +248,21 @@ public class CardActivity extends AppCompatActivity {
                         cardActivityViewModel.getImageUrl(this, destination, listid);
                         progressBar.setVisibility(View.VISIBLE);
                         createButton.setVisibility(View.INVISIBLE);
+                        updateButton.setVisibility(View.GONE);
+                        archiveButton.setVisibility(View.GONE);
                         cardActivityViewModel.urlLiveData.observe(this, newUrl->{
                             atachmentUrl = newUrl;
+                            updatedMap.put("attachment", newUrl);
                             Log.e(Constants.TAG, atachmentUrl);
+                            attachmentTV.setText("Attachment Added");
+                            attachmentTV.setTextColor(getResources().getColor(R.color.green1));
                             progressBar.setVisibility(View.GONE);
-                            createButton.setVisibility(View.VISIBLE);
+                            if(gotCard==null) {
+                                createButton.setVisibility(View.VISIBLE);
+                            } else {
+                                updateButton.setVisibility(View.VISIBLE);
+                                archiveButton.setVisibility(View.VISIBLE);
+                            }
                         });
                     }
                     else{
@@ -314,6 +391,13 @@ public class CardActivity extends AppCompatActivity {
         selecteDate =new Date(year-1900, month-1, day, hour, minute, second);
         SimpleDateFormat sfd = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
         sfd.format(selecteDate);
+        updatedMap.put("dueDate", selecteDate);
+        dueDateTv.setText(getRedableDate(selecteDate));
+    }
+
+    public String getRedableDate(Date date){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMMM dd, yyyy HH:mm");
+        return simpleDateFormat.format(date);
     }
 
 }

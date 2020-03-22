@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,14 +23,17 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import me.sankalpchauhan.kanbanboard.R;
 import me.sankalpchauhan.kanbanboard.adapters.BoardListAdapter;
+import me.sankalpchauhan.kanbanboard.adapters.CardAdapter;
 import me.sankalpchauhan.kanbanboard.fragments.ListCreateBottomSheet;
 import me.sankalpchauhan.kanbanboard.model.Board;
 import me.sankalpchauhan.kanbanboard.model.BoardList;
+import me.sankalpchauhan.kanbanboard.model.Card;
 import me.sankalpchauhan.kanbanboard.util.Constants;
 import me.sankalpchauhan.kanbanboard.util.FirestoreReorderableItemTouchHelperCallback;
 import me.sankalpchauhan.kanbanboard.viewmodel.BoardActivityViewModel;
 
 import static me.sankalpchauhan.kanbanboard.util.Constants.BOARD_LIST;
+import static me.sankalpchauhan.kanbanboard.util.Constants.CARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.PERSONAL_BOARDS;
 import static me.sankalpchauhan.kanbanboard.util.Constants.USERS;
 
@@ -93,11 +97,11 @@ public class BoardActivity extends AppCompatActivity {
         FirestoreRecyclerOptions<BoardList> boardOptions = new FirestoreRecyclerOptions.Builder<BoardList>()
                 .setQuery(boardListCollection.orderBy("position"), BoardList.class)
                 .build();
-        boardListAdapter = new BoardListAdapter(boardOptions);
+        boardListAdapter = new BoardListAdapter(boardOptions, this);
         recyclerView.setHasFixedSize(false);
 //        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, true));
-        recyclerView.setAdapter(boardListAdapter = new BoardListAdapter(boardOptions){
+        recyclerView.setAdapter(boardListAdapter = new BoardListAdapter(boardOptions, this){
             @Override
             public void onDataChanged() {
                 super.onDataChanged();
@@ -114,8 +118,8 @@ public class BoardActivity extends AppCompatActivity {
                 String listid = documentSnapshot.getId();
                 BoardList boardList = documentSnapshot.toObject(BoardList.class);
                 Bundle b = new Bundle();
-                b.putString("ListId", listid);
-                b.putString("BoardId", id);
+                b.putString("listId", listid);
+                b.putString("boardId", id);
                 b.putSerializable("BoardList", boardList);
                 i.putExtras(b);
                 startActivity(i);
@@ -135,5 +139,9 @@ public class BoardActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         boardListAdapter.stopListening();
+    }
+
+    public String getBoardId(){
+        return id;
     }
 }

@@ -17,6 +17,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -27,6 +28,7 @@ import me.sankalpchauhan.kanbanboard.model.Card;
 import me.sankalpchauhan.kanbanboard.util.IgnoreChangesFirestoreRecyclerAdapter;
 
 public class CardAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Card, CardAdapter.CardHolder> {
+    private OnItemClickListener listener;
 
     public CardAdapter(@NonNull FirestoreRecyclerOptions<Card> options) {
         super(options);
@@ -49,15 +51,17 @@ public class CardAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Card, Car
                     return false;
                 }
             }).thumbnail(0.1f).into(cardHolder.attachmentIMG);
+            cardHolder.attachmentIMG.setVisibility(View.VISIBLE);
         }
         if(card.getDueDate()!=null){
             Date duedate = card.getDueDate();
             Date currDate = Calendar.getInstance().getTime();
-            if(duedate.after(currDate)){
+            SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+            String formattedDate = df.format(duedate);
+            cardHolder.dueDate.setText(formattedDate);
+            cardHolder.dueDate.setVisibility(View.VISIBLE);
+            if(currDate.after(duedate)){
                 cardHolder.dueDate.setBackgroundColor(cardHolder.dueDate.getContext().getResources().getColor(R.color.urgent));
-                SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-                String formattedDate = df.format(duedate);
-                cardHolder.dueDate.setText(formattedDate);
 
             }
         }
@@ -83,6 +87,24 @@ public class CardAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Card, Car
             dueDate = itemView.findViewById(R.id.duedate);
             attachmentTAG = itemView.findViewById(R.id.attachment_tag);
 
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION && listener != null) {
+                        listener.onItemClick(getSnapshots().getSnapshot(position), position);
+                    }
+                }
+            });
+
         }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(DocumentSnapshot documentSnapshot, int position);
+    }
+
+    public void setOnItemClickListner(OnItemClickListener listner) {
+        this.listener = listner;
     }
 }

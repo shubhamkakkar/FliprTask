@@ -39,7 +39,7 @@ public class Card implements Serializable, PositionAwareDocument {
 
     @Override
     public void setPosition(double position) {
-
+        this.position=position;
     }
 
     public String getTitle() {
