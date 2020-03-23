@@ -54,7 +54,7 @@ With MVVM unit testing also becomes easier (However die to time constraints unit
 
 [![TeamBoard](assets/screenshots/1.jpeg)](assets/screenshots/1.jpeg)
 
-[![SignInPage](assets/screenshots/2.jpeg](assets/screenshots/2.jpeg)
+[![SignInPage](assets/screenshots/2.jpeg)](assets/screenshots/2.jpeg)
 
 [![BoardPage](assets/screenshots/3.jpeg)](assets/screenshots/3.jpeg)
 
@@ -64,7 +64,7 @@ With MVVM unit testing also becomes easier (However die to time constraints unit
 
 [![UpdateCard](assets/screenshots/6.jpeg)](assets/screenshots/6.jpeg)
 
-[![BoardList](hassets/screenshots/7.jpeg)](assets/screenshots/7.jpeg)
+[![BoardList](assets/screenshots/7.jpeg)](assets/screenshots/7.jpeg)
 
 
 # How to build ?
