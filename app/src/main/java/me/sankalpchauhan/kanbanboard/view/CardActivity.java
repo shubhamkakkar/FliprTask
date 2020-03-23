@@ -47,6 +47,7 @@ import me.sankalpchauhan.kanbanboard.fragments.DateTimePickerDialog;
 import me.sankalpchauhan.kanbanboard.model.Board;
 import me.sankalpchauhan.kanbanboard.model.BoardList;
 import me.sankalpchauhan.kanbanboard.model.Card;
+import me.sankalpchauhan.kanbanboard.model.TeamBoard;
 import me.sankalpchauhan.kanbanboard.util.Constants;
 import me.sankalpchauhan.kanbanboard.viewmodel.CardActivityViewModel;
 
@@ -71,6 +72,7 @@ public class CardActivity extends AppCompatActivity {
     Toolbar toolbar;
     Card gotCard;
     String cardId;
+    boolean isTeam = false;
     Map<String, Object> updatedMap = new HashMap<>();
 
 
@@ -127,7 +129,12 @@ public class CardActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(!TextUtils.isEmpty(cardTitle.getText())) {
                     if(gotCard==null) {
-                        cardActivityViewModel.createCard(CardActivity.this, boardid, cardTitle.getText().toString(), listid, atachmentUrl, selecteDate);
+                        if(isTeam){
+                            cardActivityViewModel.createTeamCard(CardActivity.this, boardid, cardTitle.getText().toString(), listid, atachmentUrl, selecteDate);
+                        }
+                        else {
+                            cardActivityViewModel.createCard(CardActivity.this, boardid, cardTitle.getText().toString(), listid, atachmentUrl, selecteDate);
+                        }
                     } else {
                         Log.e(Constants.TAG, "YEAH");
                     }
@@ -140,7 +147,11 @@ public class CardActivity extends AppCompatActivity {
         archiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                cardActivityViewModel.archiveCard(CardActivity.this,boardid, listid, cardId, gotCard);
+                if(isTeam){
+                    cardActivityViewModel.archiveTeamCard(CardActivity.this, boardid, listid, cardId, gotCard);
+                } else {
+                    cardActivityViewModel.archiveCard(CardActivity.this, boardid, listid, cardId, gotCard);
+                }
             }
         });
         updateButton.setOnClickListener(new View.OnClickListener() {
@@ -150,7 +161,11 @@ public class CardActivity extends AppCompatActivity {
                     updatedMap.put("title", cardTitle.getText().toString());
                 }
                 if(updatedMap!=null) {
-                    cardActivityViewModel.updateCard(CardActivity.this, updatedMap, boardid, listid, cardId);
+                    if(isTeam){
+                        cardActivityViewModel.updateTeamCard(CardActivity.this, updatedMap, boardid, listid, cardId);
+                    } else {
+                        cardActivityViewModel.updateCard(CardActivity.this, updatedMap, boardid, listid, cardId);
+                    }
                 } else {
                     Toast.makeText(CardActivity.this, "Nothing to update", Toast.LENGTH_LONG).show();
                 }
@@ -167,6 +182,10 @@ public class CardActivity extends AppCompatActivity {
         if(bundle.getSerializable("card")!=null){
             gotCard = (Card) bundle.getSerializable("card");
             cardId = bundle.getString("cardId");
+        }
+        if(bundle.getString("teamBoard")!=null){
+            Log.e("Test", "Got it");
+            isTeam = true;
         }
     }
 

@@ -2,10 +2,11 @@ package me.sankalpchauhan.kanbanboard.model;
 
 import com.google.firebase.firestore.ServerTimestamp;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
-public class TeamBoard {
+public class TeamBoard implements Serializable {
     private String title;
     private String type;
     private @ServerTimestamp
@@ -16,10 +17,9 @@ public class TeamBoard {
 
     public TeamBoard(){}
 
-    public TeamBoard(String title, String type, Date createdAt, String createdByUserEmail, String createdByUserId, Map<String, Object> engagedUsers) {
+    public TeamBoard(String title, String type, String createdByUserEmail, String createdByUserId, Map<String, Object> engagedUsers) {
         this.title = title;
         this.type = type;
-        this.createdAt = createdAt;
         this.createdByUserEmail = createdByUserEmail;
         this.createdByUserId = createdByUserId;
         this.engagedUsers = engagedUsers;

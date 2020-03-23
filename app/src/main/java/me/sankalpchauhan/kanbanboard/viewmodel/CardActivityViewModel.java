@@ -40,5 +40,19 @@ public class CardActivityViewModel extends AndroidViewModel {
         cardActivityRepository.archiveCard(context, boardId, listId, cardId, card);
     }
 
+    //TODO: Remove Repetitive Methods by Combining Personal and Team Cards
+
+    public void createTeamCard(Context context, String boardId, String title, String listId, String attachmentUrl, Date dueDate){
+        cardLiveData = cardActivityRepository.createTeamCard(context, boardId, title, listId, attachmentUrl, dueDate);
+    }
+
+    public void updateTeamCard(Context context, Map<String, Object> updatedMap, String boardId, String listId, String cardId){
+        cardActivityRepository.updateTeamCard(context, updatedMap, boardId, listId, cardId);
+    }
+
+    public void archiveTeamCard(Context context, String boardId, String listId, String cardId, Card card){
+        cardActivityRepository.archiveTeamCard(context, boardId, listId, cardId, card);
+    }
+
 
 }

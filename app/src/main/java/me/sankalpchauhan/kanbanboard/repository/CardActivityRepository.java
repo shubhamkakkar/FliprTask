@@ -26,6 +26,7 @@ import java.util.Map;
 import me.sankalpchauhan.kanbanboard.model.Card;
 
 import static me.sankalpchauhan.kanbanboard.util.Constants.ARCHIVE_CARD_LIST;
+import static me.sankalpchauhan.kanbanboard.util.Constants.BOARDS;
 import static me.sankalpchauhan.kanbanboard.util.Constants.BOARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.CARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.PERSONAL_BOARDS;
@@ -37,6 +38,7 @@ public class CardActivityRepository {
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
     private CollectionReference database = rootRef.collection(USERS);
+    private CollectionReference databaseBoard = rootRef.collection(BOARDS);
     private StorageReference mStorageReference = FirebaseStorage.getInstance().getReference();
 
     public MutableLiveData<String> uploadImage(Context context, File destination, String listId) {
@@ -116,6 +118,53 @@ public class CardActivityRepository {
            else {
                Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_LONG).show();
            }
+        });
+    }
+
+    //TODO: Do something to remove this repetition only reference is changing
+
+    public MutableLiveData<Card> createTeamCard(Context context, String boardId, String title, String listId, String attachmentUrl, Date dueDate){
+        MutableLiveData<Card> newBoardMutableLiveData = new MutableLiveData<>();
+        CollectionReference cardreference = databaseBoard.document(boardId).collection(BOARD_LIST).document(listId).collection(CARD_LIST);
+        Card c = new Card(title,dueDate, attachmentUrl);
+        cardreference.add(c).addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                newBoardMutableLiveData.setValue(c);
+                Toast.makeText(context, "Card "+title+" Created", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+        return newBoardMutableLiveData;
+    }
+
+    public void updateTeamCard(Context context, Map<String, Object> updateMap, String boardId, String listId, String cardId){
+        //MutableLiveData<Card> newBoardMutableLiveData = new MutableLiveData<>();
+        DocumentReference cardreference = databaseBoard.document(boardId).collection(BOARD_LIST).document(listId).collection(CARD_LIST).document(cardId);
+        cardreference.update(updateMap).addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                //newBoardMutableLiveData.setValue(c);
+                Toast.makeText(context, "Card Updated", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+        //return newBoardMutableLiveData;
+    }
+
+    public void archiveTeamCard(Context context, String boardId, String listId, String cardId, Card card){
+        Log.e("TESTING", boardId+" "+listId+" "+cardId+" "+card);
+        CollectionReference archiveCardRef = databaseBoard.document(boardId).collection(BOARD_LIST).document(listId).collection(ARCHIVE_CARD_LIST);
+        DocumentReference oldCardRef = databaseBoard.document(boardId).collection(BOARD_LIST).document(listId).collection(CARD_LIST).document(cardId);
+        archiveCardRef.add(card).addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                oldCardRef.delete().addOnCompleteListener(task1 -> {
+                    Toast.makeText(context, "Card Archived", Toast.LENGTH_LONG).show();
+                });
+            }
+            else {
+                Toast.makeText(context, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+            }
         });
     }
 

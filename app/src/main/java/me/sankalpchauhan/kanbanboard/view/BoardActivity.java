@@ -21,17 +21,23 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import me.sankalpchauhan.kanbanboard.R;
 import me.sankalpchauhan.kanbanboard.adapters.BoardListAdapter;
 import me.sankalpchauhan.kanbanboard.adapters.CardAdapter;
 import me.sankalpchauhan.kanbanboard.fragments.ListCreateBottomSheet;
+import me.sankalpchauhan.kanbanboard.fragments.MemberSearchBottomSheet;
 import me.sankalpchauhan.kanbanboard.model.Board;
 import me.sankalpchauhan.kanbanboard.model.BoardList;
 import me.sankalpchauhan.kanbanboard.model.Card;
+import me.sankalpchauhan.kanbanboard.model.TeamBoard;
 import me.sankalpchauhan.kanbanboard.util.Constants;
 import me.sankalpchauhan.kanbanboard.util.FirestoreReorderableItemTouchHelperCallback;
 import me.sankalpchauhan.kanbanboard.viewmodel.BoardActivityViewModel;
 
+import static me.sankalpchauhan.kanbanboard.util.Constants.BOARDS;
 import static me.sankalpchauhan.kanbanboard.util.Constants.BOARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.CARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.PERSONAL_BOARDS;
@@ -41,15 +47,19 @@ public class BoardActivity extends AppCompatActivity {
     Toolbar toolbar;
     String id;
     Board board;
+    TeamBoard teamBoard;
     BoardActivityViewModel boardActivityViewModel;
-    FloatingActionButton listCreateFAB;
+    FloatingActionButton listCreateFAB, memberAddFAB;
     BoardListAdapter boardListAdapter;
     ItemTouchHelper boardTouchHelper;
     RecyclerView rvList;
+    Map<String, Object> updatedMap = new HashMap<>();
+    Map<String, Object> engagedUsers = new HashMap<>();
 
     //Remove these from here after testing
     private FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
     private CollectionReference database = rootRef.collection(USERS);
+    private CollectionReference databaseBoard = rootRef.collection(BOARDS);
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
 
     @Override
@@ -58,19 +68,34 @@ public class BoardActivity extends AppCompatActivity {
         setContentView(R.layout.activity_board);
         getIntentData();
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(board.getTitle());
+        if(teamBoard!=null) {
+            toolbar.setTitle(teamBoard.getTitle());
+            engagedUsers = teamBoard.getEngagedUsers();
+        } else {
+            toolbar.setTitle(board.getTitle());
+        }
         toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
         setSupportActionBar(toolbar);
         listCreateFAB = findViewById(R.id.list_add_fab);
         rvList = findViewById(R.id.rv_list_item);
+        memberAddFAB = findViewById(R.id.member_add_fab);
         setUpRecyclerView(rvList);
         initBoardActivityViewModel();
-
+        if(teamBoard!=null){
+            memberAddFAB.show();
+        }
         listCreateFAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ListCreateBottomSheet listCreateBottomSheet = new ListCreateBottomSheet();
                 listCreateBottomSheet.show(getSupportFragmentManager(), "listcreatebottomsheet");
+            }
+        });
+        memberAddFAB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                MemberSearchBottomSheet memberSearchBottomSheet = new MemberSearchBottomSheet();
+                memberSearchBottomSheet.show(getSupportFragmentManager(), "membersearchbottomsheet");
             }
         });
     }
@@ -80,6 +105,7 @@ public class BoardActivity extends AppCompatActivity {
         Bundle bundle = intent.getExtras();
         id = bundle.getString("BoardId");
         board = (Board) bundle.getSerializable("Board");
+        teamBoard = (TeamBoard) bundle.getSerializable("TeamBoard");
     }
 
     private void initBoardActivityViewModel() {
@@ -87,12 +113,21 @@ public class BoardActivity extends AppCompatActivity {
     }
 
     public void addListToDB(String title){
-        boardActivityViewModel.createList(this, id, title);
+        if(teamBoard==null) {
+            boardActivityViewModel.createList(this, id, title);
+        }else {
+            boardActivityViewModel.createTeamList(this, id, title);
+        }
     }
 
 
     public void setUpRecyclerView(RecyclerView recyclerView){
-        final CollectionReference boardListCollection = database.document(firebaseAuth.getCurrentUser().getUid()).collection(PERSONAL_BOARDS).document(id).collection(BOARD_LIST);
+        final CollectionReference boardListCollection;
+        if(teamBoard==null) {
+             boardListCollection= database.document(firebaseAuth.getCurrentUser().getUid()).collection(PERSONAL_BOARDS).document(id).collection(BOARD_LIST);
+        } else {
+            boardListCollection = databaseBoard.document(id).collection(BOARD_LIST);
+        }
         Log.e(Constants.TAG, id);
         FirestoreRecyclerOptions<BoardList> boardOptions = new FirestoreRecyclerOptions.Builder<BoardList>()
                 .setQuery(boardListCollection.orderBy("position"), BoardList.class)
@@ -121,12 +156,19 @@ public class BoardActivity extends AppCompatActivity {
                 b.putString("listId", listid);
                 b.putString("boardId", id);
                 b.putSerializable("BoardList", boardList);
+                if(isTeam()){
+                    b.putString("teamBoard", "yes");
+                }
                 i.putExtras(b);
                 startActivity(i);
             }
         });
+    }
 
-
+    public void addMember(String userId, String email){
+        engagedUsers.put(userId, email);
+        updatedMap.put("engagedUsers", engagedUsers);
+        boardActivityViewModel.addTeamMember(this, id, updatedMap);
     }
 
     @Override
@@ -143,5 +185,12 @@ public class BoardActivity extends AppCompatActivity {
 
     public String getBoardId(){
         return id;
+    }
+
+    public boolean isTeam(){
+        if(teamBoard!=null){
+            return true;
+        }
+        return false;
     }
 }

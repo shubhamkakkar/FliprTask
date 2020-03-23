@@ -31,6 +31,7 @@ import me.sankalpchauhan.kanbanboard.util.IgnoreChangesFirestoreRecyclerAdapter;
 import me.sankalpchauhan.kanbanboard.view.BoardActivity;
 import me.sankalpchauhan.kanbanboard.view.CardActivity;
 
+import static me.sankalpchauhan.kanbanboard.util.Constants.BOARDS;
 import static me.sankalpchauhan.kanbanboard.util.Constants.BOARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.CARD_LIST;
 import static me.sankalpchauhan.kanbanboard.util.Constants.PERSONAL_BOARDS;
@@ -41,6 +42,7 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
     //Remove these from here after testing
     private FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
     private CollectionReference database = rootRef.collection(USERS);
+    private CollectionReference databaseBoard = rootRef.collection(BOARDS);
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private RecyclerView.RecycledViewPool recycledViewPool;
     CardAdapter cardAdapter;
@@ -58,8 +60,12 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
         listViewHolder.toolbar.setTitle(boardList.getTitle());
         if (mContext instanceof BoardActivity) {
             String boardid = ((BoardActivity) mContext).getBoardId();
-
-            final CollectionReference boardListCollection = database.document(firebaseAuth.getCurrentUser().getUid()).collection(PERSONAL_BOARDS).document(boardid).collection(BOARD_LIST).document(getSnapshots().getSnapshot(position).getId()).collection(CARD_LIST);
+            final CollectionReference boardListCollection;
+            if(((BoardActivity) mContext).isTeam()){
+                boardListCollection = databaseBoard.document(boardid).collection(BOARD_LIST).document(getSnapshots().getSnapshot(position).getId()).collection(CARD_LIST);
+            } else {
+                boardListCollection = database.document(firebaseAuth.getCurrentUser().getUid()).collection(PERSONAL_BOARDS).document(boardid).collection(BOARD_LIST).document(getSnapshots().getSnapshot(position).getId()).collection(CARD_LIST);
+            }
             //Log.e(Constants.TAG, id);
             FirestoreRecyclerOptions<Card> cardOptions = new FirestoreRecyclerOptions.Builder<Card>()
                     .setQuery(boardListCollection.orderBy("position"), Card.class)
@@ -92,6 +98,9 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
                 b.putSerializable("BoardList", boardList);
                 b.putSerializable("listId", getSnapshots().getSnapshot(position).getId());
                 b.putSerializable("card", c);
+                if(((BoardActivity) mContext).isTeam()){
+                    b.putSerializable("teamBoard", "yes");
+                }
                 i.putExtras(b);
                 mContext.startActivity(i);
             }

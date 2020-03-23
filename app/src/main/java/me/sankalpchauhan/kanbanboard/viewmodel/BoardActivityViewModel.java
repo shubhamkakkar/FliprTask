@@ -11,6 +11,8 @@ import androidx.lifecycle.LiveData;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.Query;
 
+import java.util.Map;
+
 import me.sankalpchauhan.kanbanboard.model.BoardList;
 import me.sankalpchauhan.kanbanboard.repository.BoardActivityRepository;
 import me.sankalpchauhan.kanbanboard.repository.MainActivityRepository;
@@ -31,9 +33,19 @@ public class BoardActivityViewModel extends AndroidViewModel {
         listLiveData = boardActivityRepository.createPersonalList(context, boardId, title);
     }
 
+    public void createTeamList(Context context, String boardId, String title){
+        //Log.e(Constants.TAG, UserUID+" "+boardType+" "+boardTitle);
+        listLiveData = boardActivityRepository.createTeamList(context, boardId, title);
+    }
+
     public CollectionReference getQuery(String DocumentId){
         //Log.e(Constants.TAG,"Test");
         return boardActivityRepository.getBoardList(DocumentId);
     }
+
+    public void addTeamMember(Context context, String boardId, Map<String, Object> updatedMap){
+        boardActivityRepository.addUserToBoard(context, boardId, updatedMap);
+    }
+
 
 }

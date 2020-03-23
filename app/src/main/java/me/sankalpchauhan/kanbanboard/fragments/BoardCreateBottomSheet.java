@@ -58,7 +58,11 @@ public class BoardCreateBottomSheet extends BottomSheetDialogFragment implements
                 if(!TextUtils.isEmpty(mBoardTitle.getText())) {
                     Activity act = getActivity();
                     if (act instanceof MainActivity) {
-                        ((MainActivity) act).addBoardToDB(mBoardTitle.getText().toString(), mType);
+                        if(mType.equals("Personal")) {
+                            ((MainActivity) act).addBoardToDB(mBoardTitle.getText().toString(), mType);
+                        } else if(mType.equals("Team")){
+                            ((MainActivity) act).addTeamBoardToDB(mBoardTitle.getText().toString(), mType);
+                        }
                     }
                 } else {
                     Toast.makeText(getContext(), "A board must have a title", Toast.LENGTH_LONG).show();

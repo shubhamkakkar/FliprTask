@@ -44,8 +44,10 @@ import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 
 import me.sankalpchauhan.kanbanboard.R;
 import me.sankalpchauhan.kanbanboard.adapters.PersonalBoardAdapter;
+import me.sankalpchauhan.kanbanboard.adapters.TeamBoardAdapter;
 import me.sankalpchauhan.kanbanboard.fragments.BoardCreateBottomSheet;
 import me.sankalpchauhan.kanbanboard.model.Board;
+import me.sankalpchauhan.kanbanboard.model.TeamBoard;
 import me.sankalpchauhan.kanbanboard.model.User;
 import me.sankalpchauhan.kanbanboard.util.Constants;
 import me.sankalpchauhan.kanbanboard.viewmodel.MainActivityViewModel;
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     FloatingActionButton boardFAB;
     MainActivityViewModel mainActivityViewModel;
     private PersonalBoardAdapter adapter;
+    private TeamBoardAdapter teamBoardAdapter;
     RecyclerView rvPersonal, rvTeam;
 
     @Override
@@ -95,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
             boardCreateBottomSheet.show(getSupportFragmentManager(), "boardcreatebottomsheet");
         });
         setUpPersonalRecyclerView(rvPersonal);
+        setUpTeamRecyclerView(rvTeam);
     }
 
     private void initDrawer(){
@@ -220,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         super.onStart();
         firebaseAuth.addAuthStateListener(this);
         adapter.startListening();
+        teamBoardAdapter.startListening();
     }
 
     @Override
@@ -227,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         super.onStop();
         firebaseAuth.removeAuthStateListener(this);
         adapter.startListening();
+        teamBoardAdapter.stopListening();
     }
 
     public static FirebaseUser isAuthenticated(){
@@ -243,6 +249,13 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         mainActivityViewModel.createBoard(this, firebaseAuth.getCurrentUser().getUid(), boardTitle, boardType);
         mainActivityViewModel.boardLiveData.observe(this, newBoard->{
             Log.d(Constants.TAG, "Board Add Success");
+        });
+    }
+
+    public void addTeamBoardToDB(String boardTitle, String boardType){
+        mainActivityViewModel.createTeamBoard(this, boardTitle, boardType);
+        mainActivityViewModel.teamBoardLiveData.observe(this, newTeamBoard->{
+            Log.d(Constants.TAG, "Team Board Add Success");
         });
     }
 
@@ -270,5 +283,34 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                 startActivity(boardDetailPage);
             }
         });
+    }
+
+    public void setUpTeamRecyclerView(RecyclerView recyclerView){
+        FirestoreRecyclerOptions<TeamBoard> options = new FirestoreRecyclerOptions.Builder<TeamBoard>()
+                .setQuery(mainActivityViewModel.getTeamQuery(), TeamBoard.class)
+                .build();
+
+        teamBoardAdapter = new TeamBoardAdapter(options);
+        recyclerView.setHasFixedSize(false);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        recyclerView.setAdapter(teamBoardAdapter);
+
+        teamBoardAdapter.setOnItemClickListner(new TeamBoardAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(DocumentSnapshot documentSnapshot, int position) {
+                Intent boardDetailPage = new Intent(MainActivity.this, BoardActivity.class);
+                Bundle b = new Bundle();
+                String id = documentSnapshot.getId();
+                TeamBoard teamBoard = documentSnapshot.toObject(TeamBoard.class);
+                Log.e(Constants.TAG, id+" "+ teamBoard.getTitle());
+                b.putString("BoardId", id);
+                b.putSerializable("TeamBoard", teamBoard);
+                boardDetailPage.putExtras(b);
+                startActivity(boardDetailPage);
+            }
+        });
+
+
+
     }
 }
