@@ -36,6 +36,7 @@ public class ListCreateBottomSheet extends BottomSheetDialogFragment {
                     if (act instanceof BoardActivity) {
                         ((BoardActivity) act).addListToDB(mListTitle.getText().toString());
                     }
+                    dismiss();
                 } else {
                     Toast.makeText(getContext(), "A board must have a title", Toast.LENGTH_LONG).show();
                 }

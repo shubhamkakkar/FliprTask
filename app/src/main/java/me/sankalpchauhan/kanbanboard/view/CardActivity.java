@@ -135,6 +135,7 @@ public class CardActivity extends AppCompatActivity {
                         else {
                             cardActivityViewModel.createCard(CardActivity.this, boardid, cardTitle.getText().toString(), listid, atachmentUrl, selecteDate);
                         }
+                        onBackPressed();
                     } else {
                         Log.e(Constants.TAG, "YEAH");
                     }
@@ -152,6 +153,7 @@ public class CardActivity extends AppCompatActivity {
                 } else {
                     cardActivityViewModel.archiveCard(CardActivity.this, boardid, listid, cardId, gotCard);
                 }
+                onBackPressed();
             }
         });
         updateButton.setOnClickListener(new View.OnClickListener() {

@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -103,6 +104,7 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
                 }
                 i.putExtras(b);
                 mContext.startActivity(i);
+                //cardAdapter.stopListening();
             }
         });
         }
@@ -143,5 +145,8 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
     public void setOnItemClickListner(OnItemClickListener listner) {
         this.listener = listner;
     }
+    
+
+
 
 }

@@ -183,7 +183,9 @@
 
             </LinearLayout>
 
-
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
             <Button
                 android:id="@+id/regBTN"
                 android:layout_width="297dp"
@@ -199,8 +201,15 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+                android:layout_centerInParent="true"
                 app:layout_constraintVertical_bias="0.45" />
+                <ProgressBar
+                    android:id="@+id/progressbar_signuplogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    />
+            </RelativeLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -218,7 +227,7 @@
                 android:gravity="bottom"
                 android:textAlignment="center"
                 android:textSize="15sp"
-                android:text="Read our Terms and Conditions"/>
+                android:text="Read our Privacy Policy"/>
 
         </LinearLayout>
 

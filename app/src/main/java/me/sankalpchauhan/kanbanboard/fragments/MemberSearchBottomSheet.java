@@ -87,6 +87,7 @@ public class MemberSearchBottomSheet extends BottomSheetDialogFragment {
                 Activity act = getActivity();
                 if (act instanceof BoardActivity){
                     ((BoardActivity) act).addMember(userId, userEmail);
+                    dismiss();
                 }
             }
         });

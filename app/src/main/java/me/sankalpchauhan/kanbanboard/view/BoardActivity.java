@@ -193,4 +193,9 @@ public class BoardActivity extends AppCompatActivity {
         }
         return false;
     }
+
+    public void manualLifeCycleControl(){
+        super.onPause();
+        super.onStop();
+    }
 }

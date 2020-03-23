@@ -20,6 +20,8 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import me.sankalpchauhan.kanbanboard.model.User;
+import me.sankalpchauhan.kanbanboard.view.LoginActivity;
+import me.sankalpchauhan.kanbanboard.view.SignUpActivity;
 
 import static me.sankalpchauhan.kanbanboard.util.Constants.USERS;
 import static me.sankalpchauhan.kanbanboard.util.HelperClass.hideProgressDialog;
@@ -64,6 +66,7 @@ public class LoginRepository {
         firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> authTask) {
+                ((SignUpActivity) context).setSignUpVisibility();
                 if(authTask.isSuccessful()){
                     boolean isNewUser = authTask.getResult().getAdditionalUserInfo().isNewUser();
                     FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
@@ -95,13 +98,12 @@ public class LoginRepository {
     }
 
     public MutableLiveData<User> firebaseSignInWithEmail(Context context, String email, String password) {
-        showProgressDialog(context, "Logging In");
         MutableLiveData<User> authenticatedUserMutableLiveData = new MutableLiveData<>();
         firebaseAuth.signInWithEmailAndPassword(email, password)
               .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                   @Override
                   public void onComplete(@NonNull Task<AuthResult> authTask) {
-                      hideProgressDialog();
+                      ((LoginActivity) context).setSignInVisible();
                       if(authTask.isSuccessful()){
                           boolean isNewUser = authTask.getResult().getAdditionalUserInfo().isNewUser();
                           FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();

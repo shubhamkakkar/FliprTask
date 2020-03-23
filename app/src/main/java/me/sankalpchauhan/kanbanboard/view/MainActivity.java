@@ -3,6 +3,7 @@ package me.sankalpchauhan.kanbanboard.view;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,9 +16,11 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -26,6 +29,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -65,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
     private PersonalBoardAdapter adapter;
     private TeamBoardAdapter teamBoardAdapter;
     RecyclerView rvPersonal, rvTeam;
+    ConstraintLayout parent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +95,10 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
         boardFAB = findViewById(R.id.board_add_FAB);
         rvPersonal = findViewById(R.id.rv_personal_board);
         rvTeam = findViewById(R.id.rv_team_board);
+        parent = findViewById(R.id.parent);
+        if(!firebaseAuth.getCurrentUser().isEmailVerified()){
+            setSnackBar(parent, "Email is not verified");
+        }
         initDrawer();
         initGoogleSignInClient();
 
@@ -309,8 +318,19 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                 startActivity(boardDetailPage);
             }
         });
+    }
 
-
-
+    public static void setSnackBar(View root, String snackTitle) {
+        Snackbar snackbar = Snackbar.make(root, snackTitle, Snackbar.LENGTH_LONG);
+        snackbar.setAction("Resend Link?", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseAuth.getInstance().getCurrentUser().sendEmailVerification();
+            }
+        });
+        snackbar.show();
+        View view = snackbar.getView();
+        TextView txtv = (TextView) view.findViewById(com.google.android.material.R.id.snackbar_text);
+        txtv.setGravity(Gravity.CENTER_HORIZONTAL);
     }
 }

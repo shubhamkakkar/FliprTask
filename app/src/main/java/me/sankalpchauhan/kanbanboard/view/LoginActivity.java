@@ -39,7 +39,7 @@ public class LoginActivity extends AppCompatActivity {
     private LoginViewModel authViewModel;
     private GoogleSignInClient googleSignInClient;
     private SignInButton googleSignInButton;
-    ProgressBar mProgressGSignIn;
+    ProgressBar mProgressGSignIn, mProgressBarEmail;
     Button mSignIn;
     TextView signup, or;
     EditText emailTB;
@@ -52,6 +52,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         mProgressGSignIn = findViewById(R.id.progressbar_googlesignin);
+        mProgressBarEmail = findViewById(R.id.progressbar_emailsignin);
         signup = findViewById(R.id.signup);
         emailTB = findViewById(R.id.email);
         passTB = findViewById(R.id.password);
@@ -68,6 +69,7 @@ public class LoginActivity extends AppCompatActivity {
             mSignIn.setVisibility(View.GONE);
             googleSignInButton.setVisibility(View.GONE);
             mProgressGSignIn.setVisibility(View.GONE);
+            mProgressBarEmail.setVisibility(View.GONE);
 
         }
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
@@ -102,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
             if (TextUtils.isEmpty(email)) {
                 emailTB.setError("Required.");
             }
-            else if(isEmailValid(email)){
+            else if(!isEmailValid(email)){
                 emailTB.setError("Invalid Email");
             }
             else {
@@ -138,6 +140,7 @@ public class LoginActivity extends AppCompatActivity {
     private void emailSignIn(){
         if(validateForm()){
             authViewModel.signInWithEmail(this, emailTB.getText().toString(), passTB.getText().toString());
+            mSignIn.setVisibility(View.INVISIBLE);
             authViewModel.authenticatedUserLiveData.observe(this, authenticatedUser -> {
                 if (authenticatedUser.isNew) {
                     createNewUser(authenticatedUser);
@@ -226,6 +229,9 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         return valid;
+    }
+    public void setSignInVisible(){
+        mSignIn.setVisibility(View.VISIBLE);
     }
     @Override
     public void onPause() {

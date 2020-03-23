@@ -63,6 +63,7 @@ public class BoardCreateBottomSheet extends BottomSheetDialogFragment implements
                         } else if(mType.equals("Team")){
                             ((MainActivity) act).addTeamBoardToDB(mBoardTitle.getText().toString(), mType);
                         }
+                        dismiss();
                     }
                 } else {
                     Toast.makeText(getContext(), "A board must have a title", Toast.LENGTH_LONG).show();

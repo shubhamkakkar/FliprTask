@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,7 @@ public class SignUpActivity extends AppCompatActivity {
     View parent;
     ImageView ImgUpdate;
     SignUpViewModel signUpViewModel;
+    ProgressBar mLoginProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +49,16 @@ public class SignUpActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         parent = findViewById(R.id.parentSignUp);
         ImgUpdate = findViewById(R.id.ImgSet);
+        mLoginProgressBar = findViewById(R.id.progressbar_signuplogin);
         initSignUnButton();
         initAuthViewModel();
+
+        terms.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Toast.makeText(SignUpActivity.this, "Not yet implemented", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initSignUnButton() {
@@ -69,6 +79,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void signUpWithEmail(Context context, String email, String password, String name) {
             signUpViewModel.signUpWithEmail(context, email, password, name);
+            signUpButton.setVisibility(View.INVISIBLE);
             signUpViewModel.authenticatedUserLiveData.observe(this, authenticatedUser -> {
                 if (authenticatedUser.isNew) {
                     createNewUser(authenticatedUser);
@@ -152,5 +163,9 @@ public class SignUpActivity extends AppCompatActivity {
 
 
         return valid;
+    }
+
+    public void setSignUpVisibility(){
+        signUpButton.setVisibility(View.VISIBLE);
     }
 }
