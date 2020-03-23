@@ -143,26 +143,6 @@ public class MainActivity extends AppCompatActivity implements FirebaseAuth.Auth
                 })
                 .build();
 
-//        if(FirebaseAuth.getInstance().getCurrentUser().getPhotoUrl()!=null) {
-//            Log.e("PhotoURl", String.valueOf(firebaseAuth.getCurrentUser().getPhotoUrl()));
-//            headerResult = new AccountHeaderBuilder()
-//                    .withActivity(this)
-//                    .withSelectionFirstLine(name)
-//                    .withSelectionSecondLine(email)
-//                    .withHeaderBackground(R.color.colorPrimary)
-//                    .addProfiles(
-//                            new ProfileDrawerItem().withName(name).withEmail(email).withIcon(String.valueOf(firebaseAuth.getCurrentUser().getPhotoUrl()))
-//                    )
-//                    .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
-//                        @Override
-//                        public boolean onProfileChanged(View view, IProfile profile, boolean currentProfile) {
-//                            return false;
-//                        }
-//                    })
-//                    .build();
-//        }
-
-
         Drawer drawer = new DrawerBuilder()
                 .withAccountHeader(headerResult)
                 .withActivity(this)

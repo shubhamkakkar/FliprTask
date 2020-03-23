@@ -145,7 +145,7 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
     public void setOnItemClickListner(OnItemClickListener listner) {
         this.listener = listner;
     }
-    
+
 
 
 

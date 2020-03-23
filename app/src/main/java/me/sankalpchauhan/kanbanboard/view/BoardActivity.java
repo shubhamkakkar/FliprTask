@@ -12,6 +12,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
@@ -20,13 +23,24 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.mikepenz.materialdrawer.AccountHeader;
+import com.mikepenz.materialdrawer.AccountHeaderBuilder;
+import com.mikepenz.materialdrawer.Drawer;
+import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.model.DividerDrawerItem;
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
+import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+import com.mikepenz.materialdrawer.model.interfaces.IProfile;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import me.sankalpchauhan.kanbanboard.R;
 import me.sankalpchauhan.kanbanboard.adapters.BoardListAdapter;
 import me.sankalpchauhan.kanbanboard.adapters.CardAdapter;
+import me.sankalpchauhan.kanbanboard.fragments.GenericBottomSheet;
 import me.sankalpchauhan.kanbanboard.fragments.ListCreateBottomSheet;
 import me.sankalpchauhan.kanbanboard.fragments.MemberSearchBottomSheet;
 import me.sankalpchauhan.kanbanboard.model.Board;
@@ -55,6 +69,7 @@ public class BoardActivity extends AppCompatActivity {
     RecyclerView rvList;
     Map<String, Object> updatedMap = new HashMap<>();
     Map<String, Object> engagedUsers = new HashMap<>();
+    Map<String, Object> map1 = new HashMap<>();
 
     //Remove these from here after testing
     private FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
@@ -76,6 +91,7 @@ public class BoardActivity extends AppCompatActivity {
         }
         toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
         setSupportActionBar(toolbar);
+        initDrawer();
         listCreateFAB = findViewById(R.id.list_add_fab);
         rvList = findViewById(R.id.rv_list_item);
         memberAddFAB = findViewById(R.id.member_add_fab);
@@ -198,4 +214,80 @@ public class BoardActivity extends AppCompatActivity {
         super.onPause();
         super.onStop();
     }
+
+    private void initDrawer(){
+        if(teamBoard!=null) {
+
+            String email, name;
+            email = teamBoard.getCreatedByUserEmail();
+            String[] nameemail = email.split("@");
+            name = nameemail[0];
+            map1 = teamBoard.getEngagedUsers();
+            String firstLine;
+            if(map1.size()==1){
+                firstLine = "No Team Members";
+            } else {
+                firstLine = "Members: "+map1.size();
+            }
+
+            AccountHeader headerResult = new AccountHeaderBuilder()
+                    .withActivity(this)
+                    .withSelectionFirstLine(firstLine)
+                    .withSelectionSecondLine("Creator: "+name)
+                    .withHeaderBackground(R.color.colorPrimary)
+                    .withOnAccountHeaderListener(new AccountHeader.OnAccountHeaderListener() {
+                        @Override
+                        public boolean onProfileChanged(View view, IProfile profile, boolean currentProfile) {
+                            return false;
+                        }
+                    })
+                    .build();
+
+            Drawer drawer = new DrawerBuilder()
+                    .withAccountHeader(headerResult)
+                    .withActivity(this)
+                    .withToolbar(toolbar)
+                    .addDrawerItems(
+                            new PrimaryDrawerItem().withIdentifier(1).withName("Show Members"),
+                            new DividerDrawerItem(),
+                            new SecondaryDrawerItem().withName("Build Version: " ).withSelectable(false)
+                    )
+                    .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+                        @Override
+                        public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                            switch ((int) drawerItem.getIdentifier()) {
+                                case 1:
+                                    Bundle bundle = new Bundle();
+                                    bundle.putSerializable("memberMap", (Serializable) map1);
+                                    GenericBottomSheet fragInfo = new GenericBottomSheet();
+                                    fragInfo.setArguments(bundle);
+                                    fragInfo.show(getSupportFragmentManager(), "generic");
+                                    return false;
+                            }
+                            return true;
+                        }
+                    })
+                    .build();
+        }
+    }
+
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.archive, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle item selection
+//        switch (item.getItemId()) {
+//            case R.id.archiveItem:
+//
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
+
 }

@@ -61,6 +61,7 @@ public class PersonalBoardAdapter extends FirestoreRecyclerAdapter<Board, Person
         void onItemClick(DocumentSnapshot documentSnapshot, int position);
     }
 
+
     public void setOnItemClickListner(OnItemClickListener listner) {
         this.listener = listner;
     }

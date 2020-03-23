@@ -78,6 +78,8 @@ public class BoardCreateBottomSheet extends BottomSheetDialogFragment implements
         mType = adapterView.getItemAtPosition(position).toString();
     }
 
+
+
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {
 
