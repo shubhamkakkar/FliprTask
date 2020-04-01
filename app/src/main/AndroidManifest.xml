@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
+        android:name="me.sankalpchauhan.kanbanboard.KanbanApp"
         android:requestLegacyExternalStorage="true"
         android:allowBackup="true"
         android:icon="@drawable/logo"

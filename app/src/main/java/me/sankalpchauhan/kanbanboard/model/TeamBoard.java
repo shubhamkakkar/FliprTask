@@ -1,11 +1,14 @@
 package me.sankalpchauhan.kanbanboard.model;
 
+import androidx.annotation.Keep;
+
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+@Keep
 public class TeamBoard implements Serializable {
     private String title;
     private String type;

@@ -194,9 +194,16 @@ public class BoardActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        //boardListAdapter.startAdapter();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         boardListAdapter.stopListening();
+       // boardListAdapter.stopAdapter();
     }
 
     public String getBoardId(){

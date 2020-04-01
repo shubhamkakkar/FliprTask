@@ -1,6 +1,7 @@
 package me.sankalpchauhan.kanbanboard.adapters;
 
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +24,12 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import me.sankalpchauhan.kanbanboard.KanbanApp;
 import me.sankalpchauhan.kanbanboard.R;
 import me.sankalpchauhan.kanbanboard.model.Card;
 import me.sankalpchauhan.kanbanboard.util.IgnoreChangesFirestoreRecyclerAdapter;
+
+import static me.sankalpchauhan.kanbanboard.KanbanApp.getCrashlytics;
 
 public class CardAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Card, CardAdapter.CardHolder> {
     private OnItemClickListener listener;
@@ -90,8 +94,12 @@ public class CardAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Card, Car
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    if (getAdapterPosition() == RecyclerView.NO_POSITION) {
+                        return;
+                    }
                     int position = getAdapterPosition();
-                    if (position != RecyclerView.NO_POSITION && listener != null) {
+                    Log.e("Test", "Position: "+ getAdapterPosition());
+                    if (listener != null) {
                         listener.onItemClick(getSnapshots().getSnapshot(position), position);
                     }
                 }

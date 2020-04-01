@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -46,9 +47,10 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
     private CollectionReference databaseBoard = rootRef.collection(BOARDS);
     private FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
     private RecyclerView.RecycledViewPool recycledViewPool;
-    CardAdapter cardAdapter;
+    CardAdapter cardAdapter = null;
     private Context mContext;
     ItemTouchHelper cardTouchHelper;
+    boolean set = false;
 
     public BoardListAdapter(@NonNull FirestoreRecyclerOptions<BoardList> options, Context context) {
         super(options);
@@ -72,6 +74,7 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
                     .setQuery(boardListCollection.orderBy("position"), Card.class)
                     .build();
             cardAdapter = new CardAdapter(cardOptions);
+            //bind(cardOptions);
             listViewHolder.cardRv.setHasFixedSize(false);
             listViewHolder.cardRv.setLayoutManager(new LinearLayoutManager(mContext.getApplicationContext()));
             listViewHolder.cardRv.setRecycledViewPool(recycledViewPool);
@@ -82,11 +85,14 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
                     //setupEmptyView(mExperienceList, mExperienceEmpty, getItemCount());
                 }
             });
-            cardAdapter.startListening();
             BoardActivity boardActivity = (BoardActivity) mContext;
             cardTouchHelper = new ItemTouchHelper(new FirestoreReorderableItemTouchHelperCallback<>(boardActivity, cardAdapter, boardListCollection));
         cardTouchHelper.attachToRecyclerView(listViewHolder.cardRv);
-
+//        if(!set){
+//            cardAdapter.startListening();
+//        }
+            cardAdapter.startListening();
+            Log.e("Test", "onBindCalled");
         cardAdapter.setOnItemClickListner(new CardAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(DocumentSnapshot documentSnapshot, int position2) {
@@ -97,7 +103,7 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
                 b.putString("cardId", listid);
                 b.putString("boardId", boardid);
                 b.putSerializable("BoardList", boardList);
-                b.putSerializable("listId", getSnapshots().getSnapshot(position).getId());
+                b.putSerializable("listId", getSnapshots().getSnapshot(listViewHolder.getAdapterPosition()).getId());
                 b.putSerializable("card", c);
                 if(((BoardActivity) mContext).isTeam()){
                     b.putSerializable("teamBoard", "yes");
@@ -107,6 +113,30 @@ public class BoardListAdapter extends IgnoreChangesFirestoreRecyclerAdapter<Boar
                 //cardAdapter.stopListening();
             }
         });
+        }
+    }
+
+    private void bind(FirestoreRecyclerOptions<Card> cardOptions){
+        if(cardAdapter!=null){
+            cardAdapter.stopListening();
+        }
+        cardAdapter = new CardAdapter(cardOptions);
+
+    }
+
+    public void startAdapter(){
+        if(cardAdapter!=null) {
+            set = true;
+            Log.e("test", "Started");
+            cardAdapter.startListening();
+        }
+    }
+
+    public void stopAdapter(){
+        if(cardAdapter!=null) {
+            set = true;
+            Log.e("test", "Stopped");
+            cardAdapter.startListening();
         }
     }
 
