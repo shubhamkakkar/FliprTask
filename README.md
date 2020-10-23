@@ -52,9 +52,9 @@ AWS, Room, Retrofit, Mongo the application will run smoothly.
 With MVVM unit testing also becomes easier (However due to time constraints unit testing has not been performed in this app)
   
 
-# Screenshots
+# Screenshots // reduce these sizes 
 
-[![TeamBoard](assets/screenshots/1.jpeg)](assets/screenshots/1.jpeg)
+[![TeamBoard](assets/screenshots/1.jpeg)](assets/screenshots/1.jpeg) // reduce these sizes 
 
 [![SignInPage](assets/screenshots/2.jpeg)](assets/screenshots/2.jpeg)
 
